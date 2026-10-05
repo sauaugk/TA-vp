@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="et">
+<img src="pic/veebiprogrammeerimine_2026_TA.png" alt="">
+<head>
+	<meta charset="utf-8">
+	<title>Kevin Sauaug, veevbiprogrammeerimine</title>
+</head>
+<body>
+	<h1>Eesti filmiga seotud inimesed</h1>
+	 <p>Siin lehel on näha Eesti filmiga seotud inimesi </p>
+	<hr>
+	<ul>
+		<li><a href="/">Avalehele</a></li>
+		<li><a href="/eestifilm">Eesti filmi avaleht</a></li>
+	</ul>
+	<hr>
+	<ol>
+		<% personList.forEach(function(person){%>
+		<li><%= person.first_name %> <%= person.last_name %>, sündinud <%= person.born %> 
+		<% }); %>
+	</ol>
+</body>
+</html>
