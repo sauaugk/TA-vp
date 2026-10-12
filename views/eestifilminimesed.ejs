@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="et">
-<img src="pic/veebiprogrammeerimine_2026_TA.png" alt="">
 <head>
 	<meta charset="utf-8">
-	<title>Kevin Sauaug, veevbiprogrammeerimine</title>
+	<title>Eesti filmiinimesed</title>
 </head>
 <body>
-	<h1>Eesti filmiga seotud inimesed</h1>
-	 <p>Siin lehel on näha Eesti filmiga seotud inimesi </p>
-	<hr>
+	<h1>Eesti filmiinimesed</h1>
 	<ul>
-		<li><a href="/">Avalehele</a></li>
-		<li><a href="/eestifilm">Eesti filmi avaleht</a></li>
+		<li><a href="/eestifilm">Tagasi filmi pealehele</a></li>
+		<li><a href="/eestifilm/inimesed_add">Lisa Eesti filmiinimesi</a></li>
 	</ul>
 	<hr>
-	<ol>
-		<% personList.forEach(function(person){%>
-		<li><%= person.first_name %> <%= person.last_name %>, sündinud <%= person.born %> 
-		<% }); %>
-	</ol>
+	<% if (personList.length > 0) { %>
+		<ul>
+			<% personList.forEach(person => { %>
+				<li>
+					<%= person.first_name %> <%= person.last_name %>,
+					sündinud <%= person.born ? new Date(person.born).toLocaleDateString('et-EE') : '' %>
+					<% if (person.deceased) { %>
+						, surnud <%= new Date(person.deceased).toLocaleDateString('et-EE') %>
+					<% } %>
+				</li>
+			<% }) %>
+		</ul>
+	<% } else { %>
+		<p>Ühtegi inimest ei leitud.</p>
+	<% } %>
 </body>
 </html>

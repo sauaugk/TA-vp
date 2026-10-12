@@ -37,94 +37,16 @@ app.get('/vanasona', async (req, res)=>{
 	}
 });
 
-app.get('/regvisit', (req, res)=>{
-	res.render('regvisit');
+app.get('/miks-tlu', (req, res)=>{
+	res.render('miks-tlu');
 });
 
-app.post('/regvisit', async (req, res)=>{
-	try{
-		await fs.open(regTextRef, 'a');
-		await fs.appendFile(regTextRef, req.body.nameInput + ';');
-		res.render('regvisit');
-	}
-	catch (err){
-		console.log(err);
-		res.render('regvisit');
-	}
-});
+//Eesti filmi marsuudid
+const eestifilmRouter = require('./routes/eestifilmRoutes');
+app.use('/eestifilm', eestifilmRouter);
 
-app.get('/eestifilm', (req,res)=>{
-	res.render('eestifilm')
-});
-
-app.get('/eestifilm/inimesed', async (req,res)=>{
-	//console.log('Andmebaasiserver on: ' + process.env.DB_HOST);
-	let conn;
-	try {
-		conn = await mysql.createConnection({ 
-			host: process.env.DB_HOST, 
-			user: process.env.DB_USER,
-			password: process.env.DB_PASS,
-			database: process.env.DB_NAME,
-		});
-		const sqlReq = 'SELECT * FROM person ORDER by last_name';
-		const [sqlRes] = await conn.execute(sqlReq);
-		console.log(sqlRes);
-		res.render('eestifilminimesed', {personList: sqlRes});
-	}
-	catch (err){
-		console.log ('Viga andmebaasist lugemisel: ' +err);
-		res.render('eestifilminimesed', {personList: []});
-	}
-	finally {
-		if(conn){
-			await conn.end();
-			console.log('Andmebaasi ühendus suletud.');
-		}
-	}
-});
-
-app.get('/eestifilm/inimesed_add', (req,res)=>{
-	res.render('eestifilminimesed_add', {notice: 'Ootan sisestust!'});
-});
-
-app.post('/eestifilm/inimesed_add', async (req,res)=>{
-	console.log(req.body);
-	//kontrollime andmete olemasolu
-	if(!req.body.firstNameInput || !req.body.lastNameInput || req.body.bornInput >= new Date()){
-		console.log('Andmed pole korrektsed');
-		res.render('eestifilminimesed_add', {notice: 'Andmed on puudulikud!'});
-	}
-	let conn;
-	try {
-		conn = await mysql.createConnection({ 
-			host: process.env.DB_HOST, 
-			user: process.env.DB_USER,
-			password: process.env.DB_PASS,
-			database: process.env.DB_NAME,
-		});
-		let sqlReq = 'INSERT INTO person (first_name, last_name, born, deceased) VALUES (?,?,?,?)';
-		let deceasedDate= null;
-		if (req.body.deceasedInput != ''){
-			deceasedDate= req.body.deceasedInput;
-		}
-		await conn.execute(sqlReq, [
-			req.body.firstNameInput, 
-			req.body.lastNameInput,
-			req.body.bornInput,
-			deceasedDate
-		]);
-		res.render('eestifilminimesed_add', {notice: 'Andmed salvestati! Ootan uut sisestust!'});
-	}	
-		catch (err) {
-			console.log('Viga andmebaasiga suhtlemisel: ' + err);
-			res.render('eestifilminimesed_add', {notice: 'Tekkis Viga! Andmeid ei salvestatud!'});
-		}
-	finally {
-		if(conn){
-			await conn.end();
-		}
-	}
-});
+//Külastuste marsuudid
+const külastusteRouter = require('./routes/külastusteRoutes');
+app.use('/', külastusteRouter);
 
 app.listen(5105);

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Filmi lisamine</title>
+</head>
+<body>
+	<h1>Lisa uus film</h1>
+	<ul>
+		<li><a href="/eestifilm">Tagasi filmi pealehele</a></li>
+	</ul>
+	<hr>
+	<% if (notice) { %>
+		<p><strong><%= notice %></strong></p>
+	<% } %>
+	<form method="POST" action="/eestifilm/filmid_add">
+		<label for="titleInput">Filmi pealkiri:</label><br>
+		<input type="text" name="titleInput" id="titleInput" value="<%= title || '' %>"><br>
+		<% if (errors.title) { %> <span style="color:red;"><%= errors.title %></span><br> <% } %>
+		<br>
+		<label for="yearInput">Tootmisaasta:</label><br>
+		<input type="number" name="yearInput" id="yearInput" value="<%= year || '' %>"><br>
+		<% if (errors.year) { %> <span style="color:red;"><%= errors.year %></span><br> <% } %>
+		<br>
+		<label for="durationInput">Kestus (minutites):</label><br>
+		<input type="number" name="durationInput" id="durationInput" value="<%= duration || '' %>"><br>
+		<% if (errors.duration) { %> <span style="color:red;"><%= errors.duration %></span><br> <% } %>
+		<br>
+		<label for="descriptionInput">Lühikirjeldus:</label><br>
+		<textarea name="descriptionInput" id="descriptionInput" rows="4" cols="40"><%= description || '' %></textarea><br>
+		<% if (errors.description) { %> <span style="color:red;"><%= errors.description %></span><br> <% } %>
+		<br>
+
+		<button type="submit">Salvesta film</button>
+	</form>
+</body>
+</html>
