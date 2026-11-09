@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Kevin Sauaug, fotogalerii</title>
+</head>
+<body>
+	<h1>Fotogalerii</h1>
+	<li><a href="/home">Avalehele</a></li>
+	<li><a href="/logout">Logi välja</a></li>>
+	<hr>
+	<% if (photos.length > 0) { %>
+		<% photos.forEach(photo => { %>
+			<a href="/gallery/normal/<%= photo.filename %>">
+				<img src="/gallery/thumbs/<%= photo.filename %>" alt="<%= photo.alttext || 'Foto' %>">
+			</a>
+		<% }); %>
+	<% } else { %>
+		<p>Galeriis pole veel ühtegi fotot.</p>
+	<% } %>
+</body>
+</html>

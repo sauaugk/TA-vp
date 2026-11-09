@@ -10,7 +10,10 @@ const {
 	filmidAdd,
 	filmidAddPost,
 	ametidAdd,
-	ametidAddPost
+	ametidAddPost,
+	seosedAdd,
+	seosedAddPost,
+	seosed
 } = require('../controllers/eestifilmControllers');
 
 router.route('/').get(eestifilm);
@@ -22,5 +25,9 @@ router.route('/inimesed_add').get(inimesedAdd).post(inimesedAddPost);
 router.route('/filmid_add').get(filmidAdd).post(filmidAddPost);
 
 router.route('/ametid_add').get(ametidAdd).post(ametidAddPost);
+
+router.route('/seosed_add').get(seosedAdd).post(seosedAddPost);
+
+router.route('/seosed').get(seosed);
 
 module.exports = router;

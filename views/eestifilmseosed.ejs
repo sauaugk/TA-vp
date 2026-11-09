@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Seosed</title>
+</head>
+<body>
+	<h1>Isikud filmides</h1>
+	<ul>
+		<li><a href="/eestifilm">Tagasi filmi pealehele</a></li>
+		<li><a href="/eestifilm/seosed_add">Lisa seos</a></li>
+	</ul>
+	<hr>
+	<% if (relationList.length > 0) { %>
+		<ul>
+			<% relationList.forEach(r => { %>
+				<li>
+					<%= r.first_name %> <%= r.last_name %> – <%= r.movie_title %> – <%= r.profession_title %>
+					<% if (r.character_name) { %>(tegelane: <%= r.character_name %>)<% } %>
+				</li>
+			<% }) %>
+		</ul>
+	<% } else { %>
+		<p>Seoseid pole veel lisatud.</p>
+	<% } %>
+</body>
+</html>

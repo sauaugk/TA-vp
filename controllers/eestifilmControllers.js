@@ -1,4 +1,15 @@
-const mysql = require('mysql2/promise')
+const mysql = require('mysql2/promise');
+
+function getConnection() {
+	return mysql.createConnection({
+		host: process.env.DB_HOST,
+		user: process.env.DB_USER,
+		password: process.env.DB_PASS,
+		database: process.env.DB_NAME
+	});
+}
+const T_RELATION = 'person_in_movie'; // seostetabel
+const T_PROFESSION = 'profession'; // ametite tabel (veerg profession_id viitab sellele)
 
 //@desc home page for Estonian Film section
 //@route GET/eestifilm
@@ -208,7 +219,7 @@ const ametidAddPost = async (req, res) => {
 	try {
 		conn = await getConnection();
 		await conn.execute(
-			'INSERT INTO `position` (title, description) VALUES (?,?)',
+			'INSERT INTO ' + T_PROFESSION + ' (title, description) VALUES (?,?)',
 			[positionName, description || null]
 		);
 		res.render('eestifilmametid_add', {
@@ -229,6 +240,130 @@ const ametidAddPost = async (req, res) => {
 	}
 };
 
+// rippmenüüde andmed
+async function getOptions(conn) {
+	const [persons] = await conn.execute('SELECT id, first_name, last_name FROM person ORDER BY last_name, first_name');
+	const [movies] = await conn.execute('SELECT id, title FROM movie ORDER BY title');
+	const [professions] = await conn.execute('SELECT id, title FROM ' + T_PROFESSION + ' ORDER BY title');
+	return { persons, movies, professions };
+}
+
+const emptySelected = { person: null, movie: null, profession: null, character: '' };
+
+//@desc Lehekülg seosetele (inimene - film - amet)
+//@route GET /eestifilm/seosed_add
+//@access public
+const seosedAdd = async (req, res) => {
+	let conn;
+	try {
+		conn = await getConnection();
+		const options = await getOptions(conn);
+		res.render('eestifilmseosed_add', {
+			notice: 'Ootan sisestust!',
+			...options,
+			selected: emptySelected
+		});
+	} catch (err) {
+		console.log('Viga andmebaasist lugemisel: ' + err);
+		res.render('eestifilmseosed_add', {
+			notice: 'Andmeid ei õnnestunud lugeda!',
+			persons: [], movies: [], professions: [],
+			selected: emptySelected
+		});
+	} finally {
+		if (conn) await conn.end();
+	}
+};
+
+//@desc seoste lisamine
+//@route POST /eestifilm/seosed_add
+//@access public
+const seosedAddPost = async (req, res) => {
+	const personId = Number(req.body.personInput);
+	const movieId = Number(req.body.movieInput);
+	const professionId = Number(req.body.professionInput);
+	const character = (req.body.characterInput || '').trim();
+	const selected = {
+		person: req.body.personInput,
+		movie: req.body.movieInput,
+		profession: req.body.professionInput,
+		character: req.body.characterInput || ''
+	};
+
+	let conn;
+	try {
+		conn = await getConnection();
+		const options = await getOptions(conn);
+		let notice = '';
+
+		if (!Number.isInteger(personId) || personId < 1 ||
+			!Number.isInteger(movieId) || movieId < 1 ||
+			!Number.isInteger(professionId) || professionId < 1) {
+			notice = 'Vali isik, film ja amet!';
+		} else if (character.length > 100) {
+			notice = 'Tegelase nimi võib olla kuni 100 märki.';
+		} else {
+			// kas täpselt sama seos on juba olemas? (<=> töötab ka NULL-iga)
+			const [existing] = await conn.execute(
+				'SELECT id FROM ' + T_RELATION +
+				' WHERE person_id = ? AND movie_id = ? AND profession_id = ? AND character_name <=> ?',
+				[personId, movieId, professionId, character || null]
+			);
+			if (existing.length > 0) {
+				notice = 'Selline seos on juba olemas!';
+			} else {
+				await conn.execute(
+					'INSERT INTO ' + T_RELATION +
+					' (person_id, movie_id, profession_id, character_name) VALUES (?,?,?,?)',
+					[personId, movieId, professionId, character || null]
+				);
+				return res.render('eestifilmseosed_add', {
+					notice: 'Seos salvestati!',
+					...options,
+					selected: emptySelected
+				});
+			}
+		}
+		res.render('eestifilmseosed_add', { notice, ...options, selected });
+	} catch (err) {
+		console.log('Viga andmebaasiga suhtlemisel: ' + err);
+		res.render('eestifilmseosed_add', {
+			notice: 'Tekkis viga! Andmeid ei salvestatud!',
+			persons: [], movies: [], professions: [],
+			selected: selected
+		});
+	} finally {
+		if (conn) await conn.end();
+	}
+};
+
+//@desc seoste nimekiri
+//@route GET /eestifilm/seosed
+//@access public
+const seosed = async (req, res) => {
+	let conn;
+	try {
+		conn = await getConnection();
+		const sqlReq =
+			'SELECT person.first_name, person.last_name, ' +
+			'movie.title AS movie_title, ' +
+			'prof.title AS profession_title, ' +
+			'rel.character_name ' +
+			'FROM ' + T_RELATION + ' AS rel ' +
+			'JOIN person ON rel.person_id = person.id ' +
+			'JOIN movie ON rel.movie_id = movie.id ' +
+			'JOIN ' + T_PROFESSION + ' AS prof ON rel.profession_id = prof.id ' +
+			'ORDER BY movie.title, person.last_name';
+		const [sqlRes] = await conn.execute(sqlReq);
+		res.render('eestifilmseosed', { relationList: sqlRes });
+	} catch (err) {
+		console.log('Viga andmebaasist lugemisel: ' + err);
+		res.render('eestifilmseosed', { relationList: [] });
+	} finally {
+		if (conn) await conn.end();
+	}
+};
+
 	module.exports = {
 		eestifilm,
 		inimesed,
@@ -237,5 +372,8 @@ const ametidAddPost = async (req, res) => {
 		filmidAdd,
 		filmidAddPost,
 		ametidAdd,
-		ametidAddPost
+		ametidAddPost,
+		seosedAdd,
+		seosedAddPost,
+		seosed
 	}

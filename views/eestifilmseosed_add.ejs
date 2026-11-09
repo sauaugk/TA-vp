@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Seose lisamine</title>
+</head>
+<body>
+	<h1>Lisa seos (isik, film, amet)</h1>
+	<ul>
+		<li><a href="/eestifilm">Tagasi filmi pealehele</a></li>
+		<li><a href="/eestifilm/seosed">Vaata seoseid</a></li>
+	</ul>
+	<hr>
+	<% if (notice) { %>
+		<p><strong><%= notice %></strong></p>
+	<% } %>
+	<form method="POST" action="/eestifilm/seosed_add">
+		<label for="personInput">Isik:</label><br>
+		<select name="personInput" id="personInput">
+			<option value="">-- vali isik --</option>
+			<% persons.forEach(p => { %>
+				<option value="<%= p.id %>" <%= selected.person == p.id ? 'selected' : '' %>><%= p.first_name %> <%= p.last_name %></option>
+			<% }) %>
+		</select><br><br>
+
+		<label for="movieInput">Film:</label><br>
+		<select name="movieInput" id="movieInput">
+			<option value="">-- vali film --</option>
+			<% movies.forEach(m => { %>
+				<option value="<%= m.id %>" <%= selected.movie == m.id ? 'selected' : '' %>><%= m.title %></option>
+			<% }) %>
+		</select><br><br>
+
+		<label for="professionInput">Amet:</label><br>
+		<select name="professionInput" id="professionInput">
+			<option value="">-- vali amet --</option>
+			<% professions.forEach(a => { %>
+				<option value="<%= a.id %>" <%= selected.profession == a.id ? 'selected' : '' %>><%= a.title %></option>
+			<% }) %>
+		</select><br><br>
+
+		<label for="characterInput">Tegelase nimi (kui on):</label><br>
+		<input type="text" name="characterInput" id="characterInput" value="<%= selected.character || '' %>"><br><br>
+
+		<button type="submit">Salvesta seos</button>
+	</form>
+</body>
+</html>
